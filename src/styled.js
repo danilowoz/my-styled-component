@@ -1,12 +1,7 @@
 import React from "react";
 import DOM_ELEMENTS from "html-tags";
+import stylis from "stylis";
 
-const isStyledComponent = comp => !!(comp && comp.__styledClassName);
-
-/**
- * Creates a style element and append to `head`
- * @returns {HTMLStyleElement}
- */
 const createStyleTag = () => {
   const head = document.getElementsByTagName("head")[0];
   const style = document.createElement("style");
@@ -17,47 +12,65 @@ const createStyleTag = () => {
   return style;
 };
 
-/**
- * Creates a random className
- * @returns {string}
- */
 const createRandomClassName = () =>
   `std-${Math.random()
     .toString(36)
     .substring(7)}`;
 
-/**
- * Creates a css property list with className
- * @returns {CSSRuleList} .className { cssPropesties }
- */
-const css = (className, style) => `.${className} { ${style} }`;
+export const css = (stylesText, options = [], props) => {
+  const parseAndCleanRules = mightBeCss =>
+    mightBeCss.split("\n").reduce((prev, curr) => {
+      const stringTrimed = curr.trim();
 
-const createStyledElement = (type, styles, styleTagIntance, inheritCall) => {
+      if (!!stringTrimed) prev.push(stringTrimed);
+
+      return prev;
+    }, []);
+
+  return stylesText.reduce((prev, curr, index) => {
+    const cssRulesParsed = prev.concat(parseAndCleanRules(curr));
+    const styledComponent = options[index] && options[index].__styledClassName;
+
+    if (!!styledComponent) {
+      return cssRulesParsed.concat(`.${styledComponent}`);
+    } else if (typeof options[index] === "function") {
+      return cssRulesParsed.concat(options[index](props));
+    } else {
+      return cssRulesParsed;
+    }
+  }, []);
+};
+
+const insertStyle = (sheet, stylesText, options, props, styledClassName) => {
+  const styleText = css(stylesText, options, props);
+  const parsedCss = stylis(`.${styledClassName}`, styleText.join(""));
+  const setRules = parsedCss
+    .split("}")
+    .filter(Boolean)
+    .map(e => `${e}}`);
+
+  setRules.forEach(rule => {
+    sheet.insertRule(rule, sheet.cssRules.length);
+  });
+};
+
+const createStyledElement = (
+  elementType,
+  stylesText,
+  styleTagIntance,
+  options
+) => {
   const styledClassName = createRandomClassName();
 
   const styledComponent = ({
-    as: elementType = type,
-    className: originalClassName = "",
+    as = elementType,
+    className: classNameFromProps = "",
     ...props
   }) => {
-    const styleText = [];
-    const sheet = styleTagIntance.sheet;
-    const className = `${styledClassName} ${originalClassName}`;
+    const { sheet } = styleTagIntance;
+    const className = `${styledClassName} ${classNameFromProps}`;
 
-    styles.forEach((s, i) => {
-      styleText.push(s);
-
-      if (inheritCall[i]) {
-        styleText.push(inheritCall[i](props));
-      }
-    });
-
-    const cssWithClass = css(
-      styledClassName,
-      styleText.filter(Boolean).join("")
-    );
-
-    sheet.insertRule(cssWithClass, sheet.cssRules.length);
+    insertStyle(sheet, stylesText, options, props, styledClassName);
 
     return React.createElement(elementType, {
       ...props,
@@ -70,16 +83,12 @@ const createStyledElement = (type, styles, styleTagIntance, inheritCall) => {
   return styledComponent;
 };
 
-/**
- * Creates styled instance
- * @returns {Object[HTMLElement]}
- */
 const styled = () => {
   const styleTagIntance = createStyleTag();
 
-  return DOM_ELEMENTS.reduce((prev, element) => {
-    prev[element] = (styles, ...inheritCall) =>
-      createStyledElement(element, styles, styleTagIntance, inheritCall);
+  return DOM_ELEMENTS.reduce((prev, elementType) => {
+    prev[elementType] = (stylesText, ...options) =>
+      createStyledElement(elementType, stylesText, styleTagIntance, options);
 
     return prev;
   }, {});

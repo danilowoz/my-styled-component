@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import styled from "./styled";
+import styled, { css } from "./styled";
 
 function App() {
   const [color, setColor] = useState("red");
@@ -17,19 +17,29 @@ function App() {
     color: ${props => props.color};
     font-size: 16px;
 
+    ${() =>
+      css`
+        font-weight: bold;
+      `}
+
     text-align: center;
 
-    .strong {
-      color: blue;
+    strong,
+    span {
+      color: orange;
+      font-weight: normal;
     }
+
+    ${Strong} {
+      color: black;
+
+      ${Strong} {
+        color: black;
+      }
+    }
+
+    font-size: 32px;
   `;
-  /* > ${Strong} {
-        color: green;
-  
-        ${Strong} {
-          color: green;
-        }
-      } */
 
   const Button = styled.button`
     border: 1px solid red;
@@ -42,6 +52,7 @@ function App() {
       <Text as="h1" className="my-class" color={color}>
         Texto
         <Strong> strong</Strong>
+        <span> span</span>
       </Text>
     </div>
   );

@@ -3,11 +3,10 @@ import DOM_ELEMENTS from "html-tags";
 import stylis from "stylis";
 
 const createStyleTag = () => {
-  const head = document.getElementsByTagName("head")[0];
   const style = document.createElement("style");
-
   style.type = "text/css";
-  head.appendChild(style);
+
+  document.querySelector("head").appendChild(style);
 
   return style;
 };
@@ -17,9 +16,9 @@ const createRandomClassName = () =>
     .toString(36)
     .substring(7)}`;
 
-export const css = (stylesText, options = [], props) => {
-  const parseAndCleanRules = mightBeCss =>
-    mightBeCss.split("\n").reduce((prev, curr) => {
+export const css = (stylesText, ...args) => props => {
+  const splitStringInCSSRules = cssRule =>
+    cssRule.split("\n").reduce((prev, curr) => {
       const stringTrimed = curr.trim();
 
       if (!!stringTrimed) prev.push(stringTrimed);
@@ -27,38 +26,44 @@ export const css = (stylesText, options = [], props) => {
       return prev;
     }, []);
 
-  return stylesText.reduce((prev, curr, index) => {
-    const cssRulesParsed = prev.concat(parseAndCleanRules(curr));
-    const styledComponent = options[index] && options[index].__styledClassName;
+  return stylesText
+    .reduce((prev, curr, index) => {
+      const cssRules = prev.concat(splitStringInCSSRules(curr));
+      const styledClassname = args[index] && args[index].__styledClassName;
 
-    if (!!styledComponent) {
-      return cssRulesParsed.concat(`.${styledComponent}`);
-    } else if (typeof options[index] === "function") {
-      return cssRulesParsed.concat(options[index](props));
-    } else {
-      return cssRulesParsed;
-    }
-  }, []);
+      if (!!styledClassname) {
+        return cssRules.concat(`.${styledClassname}`);
+      } else if (typeof args[index] === "function") {
+        const funcResult = args[index](props);
+        const isACssRule =
+          typeof funcResult === "function" ? funcResult(props) : funcResult;
+        return cssRules.concat(isACssRule);
+      } else if (args[index] !== undefined) {
+        return cssRules.concat(args[index]);
+      } else {
+        return cssRules;
+      }
+    }, [])
+    .filter(Boolean)
+    .join("");
 };
 
-const insertStyle = (sheet, stylesText, options, props, styledClassName) => {
-  const styleText = css(stylesText, options, props);
-  const parsedCss = stylis(`.${styledClassName}`, styleText.join(""));
+const insertStyle = (sheet, stylesText, args, props, styledClassName) => {
+  const styleText = css(stylesText, ...args)(props);
+  const parsedCss = stylis(`.${styledClassName}`, styleText);
   const setRules = parsedCss
     .split("}")
     .filter(Boolean)
     .map(e => `${e}}`);
 
-  setRules.forEach(rule => {
-    sheet.insertRule(rule, sheet.cssRules.length);
-  });
+  setRules.forEach(rule => sheet.insertRule(rule, sheet.cssRules.length));
 };
 
 const createStyledElement = (
   elementType,
   stylesText,
   styleTagIntance,
-  options
+  args
 ) => {
   const styledClassName = createRandomClassName();
 
@@ -70,7 +75,7 @@ const createStyledElement = (
     const { sheet } = styleTagIntance;
     const className = `${styledClassName} ${classNameFromProps}`;
 
-    insertStyle(sheet, stylesText, options, props, styledClassName);
+    insertStyle(sheet, stylesText, args, props, styledClassName);
 
     return React.createElement(elementType, {
       ...props,
@@ -83,15 +88,12 @@ const createStyledElement = (
   return styledComponent;
 };
 
-const styled = () => {
-  const styleTagIntance = createStyleTag();
+const styled = {};
+const styleTagIntance = createStyleTag();
 
-  return DOM_ELEMENTS.reduce((prev, elementType) => {
-    prev[elementType] = (stylesText, ...options) =>
-      createStyledElement(elementType, stylesText, styleTagIntance, options);
+DOM_ELEMENTS.forEach(html => {
+  styled[html] = (stylesText, ...args) =>
+    createStyledElement(html, stylesText, styleTagIntance, args);
+});
 
-    return prev;
-  }, {});
-};
-
-export default styled();
+export default styled;

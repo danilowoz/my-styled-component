@@ -1,6 +1,6 @@
 # my-styled-component
 
-💅My own implementation of styled-components within 100 lines of code.
+💅 My own implementation of styled-components within 100 lines of code.
 
 ## Usage
 
@@ -23,17 +23,20 @@ const Text = styled.p`
   ${({ active }) =>
     active &&
     css`
-      font-weight: bold;
+      text-decoration: underline;
+      text-transform: ${({ color }) => {
+        return color === "red" ? "uppercase" : "none";
+      }};
     `}
 
   strong,
-  span {
+    span {
     color: #000;
     font-weight: normal;
   }
 
   ${Strong} {
-    color: 20px;
+    font-size: 20px;
   }
 `;
 ```

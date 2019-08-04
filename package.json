@@ -1,7 +1,7 @@
 {
   "name": "my-styled-component",
   "version": "1.0.0",
-  "description": "",
+  "description": "My own implementation of styled-components within 100 lines of code.",
   "main": "styled.js",
   "scripts": {},
   "repository": {

@@ -1,9 +1,44 @@
 # my-styled-component
 
-### `npm start`
+💅My own implementation of styled-components within 100 lines of code.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Usage
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+```jsx
+const SECTION_WIDTH = 400;
+
+const Section = styled.section`
+  width: ${SECTION_WIDTH}px;
+`;
+
+const Strong = styled.strong`
+  font-weight: bold;
+`;
+
+const Text = styled.p`
+  color: ${props => props.color};
+  font-size: 16px;
+  text-align: center;
+
+  ${({ active }) =>
+    active &&
+    css`
+      font-weight: bold;
+    `}
+
+  strong,
+  span {
+    color: #000;
+    font-weight: normal;
+  }
+
+  ${Strong} {
+    color: 20px;
+  }
+`;
+```
+
+## Dependencies
+
+- `html-tags`: List of standard HTML tags;
+- `stylis`: light–weight css preprocessor;

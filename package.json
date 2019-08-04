@@ -1,5 +1,6 @@
 {
-  "name": "tiny-styled",
+  "name": "my-styled-component",
+  "description": "My own implementation of styled-components within 100 lines of code.",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

@@ -39,6 +39,10 @@ const Text = styled.p`
     font-size: 20px;
   }
 `;
+
+<Secton as="p">
+   <Text color="red">Foo <strong>Foo strong</strong></Text>
+</Secton>
 ```
 
 ## Dependencies

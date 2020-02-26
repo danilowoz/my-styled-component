@@ -11,7 +11,7 @@ const Section = styled.section`
   width: ${SECTION_WIDTH}px;
 `;
 
-const Strong = styled.strong`
+const Bold = styled.strong`
   font-weight: bold;
 `;
 
@@ -35,14 +35,14 @@ const Text = styled.p`
     font-weight: normal;
   }
 
-  ${Strong} {
+  ${Bold} {
     font-size: 20px;
   }
 `;
 
-<Secton as="p">
-   <Text color="red">Foo <strong>Foo strong</strong></Text>
-</Secton>
+<Section as="p">
+   <Text color="red">Foo <strong>Foo <Bold>strong</Bold></strong></Text>
+</Section>
 ```
 
 ## Dependencies

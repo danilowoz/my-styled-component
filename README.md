@@ -30,7 +30,7 @@ const Text = styled.p`
     `}
 
   strong,
-    span {
+  span {
     color: #000;
     font-weight: normal;
   }
